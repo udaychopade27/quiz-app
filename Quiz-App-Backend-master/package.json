@@ -2,7 +2,6 @@
   "name": "express",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "Shreyaan",
   "license": "MIT",
   "type": "module",
   "private": true,
@@ -34,5 +33,7 @@
     "sharp": "^0.31.3",
     "slugify": "^1.6.5",
     "uuid": "^9.0.0"
+    "keycloak-connect": "^22.0.5",
+    "express-session": "^1.17.3"
   }
 }

@@ -15,7 +15,7 @@ export const getQuiz = async (req: Request, res: Response) => {
         Slug: quiz.Slug,
         created_by: quiz.created_by,
         quizId: quiz._id,
-        image: quiz.image,
+        image: quiz.image
       };
     });
     res.status(200).json(quizListWithoutQuestions);
@@ -85,7 +85,10 @@ export const createQuiz = async (req: Request, res: Response) => {
 
   quiz.Slug = slugify(quiz.Name, { lower: true });
 
-  if (req.user?.username) quiz.created_by = req.user.username;
+  const kauth = req.kauth?.grant;
+  const username = kauth?.access_token.content.preferred_username;
+  
+  if (username) quiz.created_by = username;
 
   const newQuiz = new Quiz(quiz);
   try {
@@ -144,7 +147,10 @@ export const updateQuiz = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "Quiz not found" });
   }
 
-  if (req.user?.username !== quiz.created_by) {
+  const kauth = req.kauth?.grant;
+  const username = kauth?.access_token.content.preferred_username;
+
+  if (username !== quiz.created_by) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -168,7 +174,10 @@ export const deleteQuiz = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "Quiz not found" });
   }
 
-  if (req.user?.username !== quiz.created_by) {
+  const kauth = req.kauth?.grant;
+  const username = kauth?.access_token.content.preferred_username;
+
+  if (username !== quiz.created_by) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 

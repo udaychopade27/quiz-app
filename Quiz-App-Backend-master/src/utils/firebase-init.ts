@@ -1,24 +1,40 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import {getStorage} from "firebase/storage"
+const express = require('express');
+const session = require('express-session');
+const Keycloak = require('keycloak-connect');
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.FIREBASE_DATABASE_URL,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-  measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+const app = express();
+
+// Setup express-session
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Initialize Keycloak
+const keycloakConfig = {
+  realm: process.env.KEYCLOAK_REALM,
+  'auth-server-url': process.env.KEYCLOAK_AUTH_SERVER_URL,
+  'ssl-required': 'external',
+  resource: process.env.KEYCLOAK_CLIENT_ID,
+  'confidential-port': 0,
+  'bearer-only': true
 };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const storage = getStorage(app);
 
+const keycloak = new Keycloak({ store: session }, keycloakConfig);
 
+// Middleware to protect routes
+app.use(keycloak.middleware());
 
-export { app, auth , storage};
+// Login endpoint
+app.get('/login', keycloak.protect(), (req, res) => {
+  res.redirect('/');
+});
+
+// Callback endpoint
+app.get('/callback', keycloak.protect(), (req, res) => {
+  res.redirect('/');
+});
